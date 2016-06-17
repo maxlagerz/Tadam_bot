@@ -23,3 +23,10 @@ tadamweb     = 'will be soon...'
 
 photo_id_d = 'AgADAgADz6cxG8WMWAUskMrxTt22OvgSSA0ABHgZzMS6qmlSaC0BAAEC'
 photo_id_s = 'AgADAgADzqcxG8WMWAUdqIgh4uQvhIYCSA0ABIxQomHyg853Li0BAAEC'
+
+WHOST = 'SERVER_IP'
+WPORT = SERVER_PORT         # 443, 80, 88 or 8443 only this are allowed
+WLISTEN = '0.0.0.0'
+
+WSSLCERT = 'PATH'
+WSSLPRIV = 'PATH'

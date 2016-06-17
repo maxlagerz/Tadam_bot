@@ -101,45 +101,45 @@ def data_collector(result_dict):
     Returns list of necessary data.
 
     :param result_dict: dictionary created from JSON-object.
-    :return: list
+    :return: mlist
     '''
-    list = []
+    mlist = []
     try:
         artist = result_dict['metadata']['music'][0]['artists'][0]['name']
     except KeyError:
         artist = False
-    list.append(artist)
+    mlist.append(artist)
 
     try:
         title = result_dict['metadata']['music'][0]['title']
     except KeyError:
         title = False
-    list.append(title)
+    mlist.append(title)
 
     try:
         album = result_dict['metadata']['music'][0]['album']['name']
     except KeyError:
         album = False
-    list.append(album)
+    mlist.append(album)
 
     try:
         lable = result_dict['metadata']['music'][0]['label']
     except KeyError:
         lable = False
-    list.append(lable)
+    mlist.append(lable)
 
     try:
         release_date = result_dict['metadata']['music'][0]['release_date']
     except KeyError:
         release_date = False
-    list.append(release_date)
+    mlist.append(release_date)
 
     try:
         youtube = result_dict['metadata']['music'] \
             [-1]['external_metadata']['youtube']['vid']
     except KeyError:
         youtube = False
-    list.append(youtube)
+    mlist.append(youtube)
 
     try:
         spotify = result_dict['metadata']['music']  \
@@ -147,7 +147,7 @@ def data_collector(result_dict):
                 ['track']['id']
     except KeyError:
         spotify = False
-    list.append(spotify)
+    mlist.append(spotify)
 
     try:
         deezer = result_dict['metadata']['music']  \
@@ -155,9 +155,9 @@ def data_collector(result_dict):
                 ['track']['id']
     except KeyError:
         deezer = False
-    list.append(deezer)
+    mlist.append(deezer)
 
-    return list
+    return mlist
 
 
 @bot.message_handler(commands=["start"])
@@ -244,47 +244,47 @@ def handler_voice(message):
         result      = rec.recognize_by_file(inputFile, 0)
         os.remove(inputFile)
         result_p    = json.loads(result)
-        list        = data_collector(result_p)
+        mlist        = data_collector(result_p)
         print(result_p)
         if result_p['status']['msg'] == 'Success':
             '''
             Flexible creation of output.
             Some data in the response may be absent.
             '''
-            if list[0]: #artist
-                output_0 = list[0]
+            if mlist[0]: #artist
+                output_0 = mlist[0]
 
-            if list[1]: #title
+            if mlist[1]: #title
                 if 'output_0' in locals():
-                    output_0 +=" - %s" % (list[1])
+                    output_0 +=" - %s" % (mlist[1])
                 else:
-                    output_0 ="%s" % (list[1])
+                    output_0 ="%s" % (mlist[1])
 
-            if list[2]: #album
-                output_2 = "Album: '%s'" % (list[2])
+            if mlist[2]: #album
+                output_2 = "Album: '%s'" % (mlist[2])
 
-            if list[3]: #lable
+            if mlist[3]: #lable
                 if 'output_2' in locals():
-                    output_2 += "\nLable: %s" % (list[3])
+                    output_2 += "\nLable: %s" % (mlist[3])
                 else:
-                    output_2 = "Lable: %s" % (list[3])
+                    output_2 = "Lable: %s" % (mlist[3])
 
-            if list[4]: #release_date
+            if mlist[4]: #release_date
                 if 'output_2' in locals():
-                    output_2 += "\nReleased: %s" % (list[4])
+                    output_2 += "\nReleased: %s" % (mlist[4])
                 else:
-                    output_2 = "Released: %s" % (list[4])
+                    output_2 = "Released: %s" % (mlist[4])
 
-            if list[5]: #youtube
+            if mlist[5]: #youtube
                 if 'output_2' in locals():
-                    output_2 += "\n%s%s" % (config.yt_link, list[5])
+                    output_2 += "\n%s%s" % (config.yt_link, mlist[5])
                 else:
-                    output_2 = "%s%s" % (config.yt_link, list[5])
+                    output_2 = "%s%s" % (config.yt_link, mlist[5])
 
-            if list[6] or list[7]: #spotify, deezer
+            if mlist[6] or mlist[7]: #spotify, deezer
                 button_1 = telebot.types.InlineKeyboardButton('Buy %s' % (output_0),
-                                                              callback_data=(str(list[6])
-                                                              + ',' + str(list[7]) + ','
+                                                              callback_data=(str(mlist[6])
+                                                              + ',' + str(mlist[7]) + ','
                                                               + str(user_id)))
                 user_markup = telebot.types.InlineKeyboardMarkup(button_1)
                 user_markup.row(button_1)
@@ -306,7 +306,7 @@ def handler_voice(message):
             user_markup.row(tadambutton)
             bot.send_message(user_id, 'Sorry, no result. You can try again or give us feedback.',
                              reply_markup=user_markup)
-        return list
+        return mlist
 
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -318,23 +318,23 @@ def callback(call):
     :param call:
     '''
     cald = call.data
-    list = cald.split(',')
-    if list[0] != 'False':
-        spotify = config.spotify_link + list[0]
+    mlist = cald.split(',')
+    if mlist[0] != 'False':
+        spotify = config.spotify_link + mlist[0]
         button_spot = telebot.types.InlineKeyboardButton('Spotify',
                                                          spotify)
         user_markup_2 = telebot.types.InlineKeyboardMarkup()
         user_markup_2.row(button_spot)
-        bot.send_photo(list[2], config.photo_id_s,
+        bot.send_photo(mlist[2], config.photo_id_s,
                        reply_markup=user_markup_2)
 
-    if list[1] != 'False':
-        deezer = config.deezer_link + list[1]
+    if mlist[1] != 'False':
+        deezer = config.deezer_link + mlist[1]
         button_dez = telebot.types.InlineKeyboardButton('Deezer',
                                                         deezer)
         user_markup_3 = telebot.types.InlineKeyboardMarkup()
         user_markup_3.row(button_dez)
-        bot.send_photo(list[2], config.photo_id_d,
+        bot.send_photo(mlist[2], config.photo_id_d,
                        reply_markup=user_markup_3)
 
 # Webhook removing eliminates some of the problems

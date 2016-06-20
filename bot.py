@@ -281,61 +281,52 @@ def handler_voice(message):
                 else:
                     output_2 = "%s%s" % (config.yt_link, mlist[5])
 
-            if mlist[6] or mlist[7]: #spotify, deezer
-                button_1 = telebot.types.InlineKeyboardButton('Buy %s' % (output_0),
-                                                              callback_data=(str(mlist[6])
-                                                              + ',' + str(mlist[7]) + ','
-                                                              + str(user_id)))
-                user_markup = telebot.types.InlineKeyboardMarkup(button_1)
-                user_markup.row(button_1)
+             if mlist[6] and mlist[7]:
+                spotify     = config.spotify_link + str(mlist[6])
+                button_spot = telebot.types.InlineKeyboardButton('Buy on Spotify',
+                                                                spotify)
+                deezer      = config.deezer_link + str(mlist[7])
+                button_dez  = telebot.types.InlineKeyboardButton('Buy on Deezer',
+                                                                deezer)
+                user_markup = telebot.types.InlineKeyboardMarkup()
+                user_markup.row(button_dez, button_spot)
+
+            elif mlist[6] and (not mlist[7]):
+                spotify     = config.spotify_link + mlist[6]
+                button_spot = telebot.types.InlineKeyboardButton('Buy on Spotify',
+                                                                spotify)
+                user_markup = telebot.types.InlineKeyboardMarkUp()
+                user_markup.row(button_spot)
+
+            elif (not mlist[6]) and mlist[7]:
+                deezer      = config.deezer_link + mlist[7]
+                button_dez  = telebot.types.InlineKeyboardButton('Buy on Deezer',
+                                                                deezer)
+                user_markup = telebot.types.InlineKeyboardMarkup()
+                user_markup.row(button_dez)
+
             else:
                 tadambutton = telebot.types.InlineKeyboardButton(
                                                 'TadamBot website',
                                                 config.tadamweb)
                 user_markup = telebot.types.InlineKeyboardMarkup(tadambutton)
-                user_markup.row(tadambutton)
-
+                user_markup.row(tadambutton)    
+                
             bot.send_message(user_id, '<b>%s</b>' % (output_0),
                              parse_mode="HTML")
             bot.send_message(user_id, output_2,
                              reply_markup=user_markup)
         else:
+            data_income(message.voice.file_id, '0')
             tadambutton = telebot.types.InlineKeyboardButton(
                 'TadamBot website', config.tadamweb)
             user_markup = telebot.types.InlineKeyboardMarkup(tadambutton)
             user_markup.row(tadambutton)
-            bot.send_message(user_id, 'Sorry, no result. You can try again or give us feedback.',
-                             reply_markup=user_markup)
+            bot.send_message(user_id, 
+                            'Sorry, no result. You can try again or leave feedback.',
+                            reply_markup=user_markup)
         return mlist
 
-
-@bot.callback_query_handler(func=lambda call: True)
-def callback(call):
-    '''
-    This handler allows to handle callback data from Inline Keyboards
-    in Telegram. Necessary data contains in "callback_data" :parameter
-
-    :param call:
-    '''
-    cald = call.data
-    mlist = cald.split(',')
-    if mlist[0] != 'False':
-        spotify = config.spotify_link + mlist[0]
-        button_spot = telebot.types.InlineKeyboardButton('Spotify',
-                                                         spotify)
-        user_markup_2 = telebot.types.InlineKeyboardMarkup()
-        user_markup_2.row(button_spot)
-        bot.send_photo(mlist[2], config.photo_id_s,
-                       reply_markup=user_markup_2)
-
-    if mlist[1] != 'False':
-        deezer = config.deezer_link + mlist[1]
-        button_dez = telebot.types.InlineKeyboardButton('Deezer',
-                                                        deezer)
-        user_markup_3 = telebot.types.InlineKeyboardMarkup()
-        user_markup_3.row(button_dez)
-        bot.send_photo(mlist[2], config.photo_id_d,
-                       reply_markup=user_markup_3)
 
 # Webhook removing eliminates some of the problems
 bot.remove_webhook()

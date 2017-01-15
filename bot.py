@@ -4,9 +4,9 @@
 '''
     Author: max.lager
     E-mail: tadambot@gmail.com
-    @Version: 1.0
+    @Version: 1.1
     @Release date: June 20/2016
-    www.tadambot.xyz
+    @Update 1.1 date: December 12/2016
 '''
 
 import os
@@ -26,7 +26,6 @@ from acrcloud.recognizer import ACRCloudRecognizer
     Audio Recognition: ACRCloud (www.acrcloud.com)
 '''
 
-
 WEBHOOK_HOST    = config.WHOST
 WEBHOOK_PORT    = config.WPORT
 WEBHOOK_LISTEN  = config.WLISTEN
@@ -38,7 +37,6 @@ WEBHOOK_URL_BASE = "https://%s:f%s" % (WEBHOOK_HOST, WEBHOOK_PORT)
 WEBHOOK_URL_PATH = "/%s/" % (config.token)
 
 bot  = telebot.TeleBot(config.token)
-
 
 class WebhookServer(object):
     @cherrypy.expose
@@ -162,29 +160,36 @@ def data_collector(result_dict):
 
 @bot.message_handler(commands=["start"])
 def handler_start(message):
-    bot.send_message(message.chat.id, "I will help you to recognize the music."
-                                      " Just send me the audio file, which is "
-                                      "recorded by you, with using a voice rec"
-                                      "ording button in the right corner at th"
-                                      "e bottom. For more detailed instruction"
-                                      "s type /help. Please, do not test bot u"
-                                      "sing VK or other untrusted source!"
-                                      "\nMusic Recognition by ACRCloud"
+    bot.send_message(message.chat.id, "Welcome to Tadam Bot.\n \nI can help yo"
+                                      "u to recognize music around you. Just r"
+                                      "ecord and send it to me using Microphon"
+                                      "e button. Recommended duration is 10 se"
+                                      "c."
+                                      "\n\n"
+                                      "Stuck? Use /help or ask @tadam_support"
                      )
-
 
 @bot.message_handler(commands=['help'])
 def handler_help(message):
-    bot.send_message(message.chat.id, "Send the audio file with duration from "
-                                      "5 to 30 seconds to use the function of "
-                                      "music recognition. Do it by pressing th"
-                                      "e button of recording in the right corn"
-                                      "er at the bottom. Press and hold this b"
-                                      "utton to record and send the audio file"
-                                      ". The recommended length of the file is"
-                                      " 10 seconds."
+    bot.send_message(message.chat.id, "1. Tap and hold microphone button. \n"
+                                      "If you don't know what it is that use"
+                                      " /whereisit\n"
+                                      "2. Hold it approximately 10 seconds.\n"
+                                      "3. When audio was sent - wait for a s"
+                                      "econd to get a result.\n\n"
+                                      "If there are problems, please, contact us "
+                                      "@tadam_support"
                      )
 
+@bot.message_handler(commands=['whereisit'])
+def handler_buttons(message):
+    bot.send_message(message.chat.id, "Microphone button allows Telegram's use"
+                                      "rs to record voice messages. You can fi"
+                                      "nd it right of the input field. Back to"
+                                      " /help")
+    img = open(image_dir + 'mic.jpg', 'rb')
+    bot.send_photo(message.chat.id, img)
+    img.close()
 
 @bot.message_handler(commands=['acrcloud'])
 def handler_acrc(message):
@@ -208,6 +213,7 @@ def handler_acrc(message):
                                       "one of the biggest in the world."
                                       "\nwww.acrcloud.com"
                      )
+
 
 @bot.message_handler(func=lambda message: True, content_types=['voice'])
 def handler_voice(message):
@@ -245,16 +251,18 @@ def handler_voice(message):
         os.remove(inputFile)
         result_p    = json.loads(result)
         mlist        = data_collector(result_p)
-        print(result_p)
+        print('NEW RECOGNITION: %s' % (result_p['status']['msg']))
         if result_p['status']['msg'] == 'Success':
             '''
             Flexible creation of output.
             Some data in the response may be absent.
             '''
+            data_income(message.voice.file_id, '1')
             if mlist[0]: #artist
                 output_0 = mlist[0]
-
+                print(mlist[0], end='')
             if mlist[1]: #title
+                print(mlist[1])
                 if 'output_0' in locals():
                     output_0 +=" - %s" % (mlist[1])
                 else:
@@ -281,37 +289,37 @@ def handler_voice(message):
                 else:
                     output_2 = "%s%s" % (config.yt_link, mlist[5])
 
-             if mlist[6] and mlist[7]:
-                spotify     = config.spotify_link + str(mlist[6])
-                button_spot = telebot.types.InlineKeyboardButton('Buy on Spotify',
-                                                                spotify)
-                deezer      = config.deezer_link + str(mlist[7])
-                button_dez  = telebot.types.InlineKeyboardButton('Buy on Deezer',
-                                                                deezer)
+            botstore = 'https://storebot.me/bot/tadam_bot'
+            button_rate = telebot.types.InlineKeyboardButton('Rate, please', botstore)
+            user_markup = telebot.types.InlineKeyboardMarkup()
+
+            if mlist[6] and mlist[7]:
+                spotify = config.spotify_link + str(mlist[6])
+                button_spot = telebot.types.InlineKeyboardButton('Buy on Spotify',spotify)
+                deezer = config.deezer_link + str(mlist[7])
+                button_dez = telebot.types.InlineKeyboardButton('Buy on Deezer',deezer)
                 user_markup = telebot.types.InlineKeyboardMarkup()
-                user_markup.row(button_dez, button_spot)
+                user_markup.row(button_dez, button_spot, button_rate)
 
             elif mlist[6] and (not mlist[7]):
-                spotify     = config.spotify_link + mlist[6]
-                button_spot = telebot.types.InlineKeyboardButton('Buy on Spotify',
-                                                                spotify)
+                spotify = config.spotify_link + mlist[6]
+                button_spot = telebot.types.InlineKeyboardButton('Buy on Spotify',spotify)
                 user_markup = telebot.types.InlineKeyboardMarkUp()
-                user_markup.row(button_spot)
+                user_markup.row(button_spot, button_rate)
 
             elif (not mlist[6]) and mlist[7]:
-                deezer      = config.deezer_link + mlist[7]
-                button_dez  = telebot.types.InlineKeyboardButton('Buy on Deezer',
-                                                                deezer)
+                deezer = config.deezer_link + mlist[7]
+                button_dez = telebot.types.InlineKeyboardButton('Buy on Deezer',deezer)
                 user_markup = telebot.types.InlineKeyboardMarkup()
-                user_markup.row(button_dez)
+                user_markup.row(button_dez, button_rate)
 
             else:
                 tadambutton = telebot.types.InlineKeyboardButton(
                                                 'TadamBot website',
                                                 config.tadamweb)
                 user_markup = telebot.types.InlineKeyboardMarkup(tadambutton)
-                user_markup.row(tadambutton)    
-                
+                user_markup.row(tadambutton)
+            
             bot.send_message(user_id, '<b>%s</b>' % (output_0),
                              parse_mode="HTML")
             bot.send_message(user_id, output_2,
@@ -322,14 +330,13 @@ def handler_voice(message):
                 'TadamBot website', config.tadamweb)
             user_markup = telebot.types.InlineKeyboardMarkup(tadambutton)
             user_markup.row(tadambutton)
-            bot.send_message(user_id, 
-                            'Sorry, no result. You can try again or leave feedback.',
-                            reply_markup=user_markup)
+            bot.send_message(user_id, 'Sorry, no result. You can try again or leave feedback @tadam_support.',
+                             reply_markup=user_markup)
         return mlist
 
 
 # Webhook removing eliminates some of the problems
-bot.remove_webhook()
+#bot.remove_webhook()
 
 # Webhook installing
 bot.set_webhook(url=WEBHOOK_URL_BASE + WEBHOOK_URL_PATH,
@@ -346,4 +353,3 @@ cherrypy.config.update({
 
 # Server start
 cherrypy.quickstart(WebhookServer(), WEBHOOK_URL_PATH, {'/': {}})
-

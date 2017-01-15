@@ -1,7 +1,8 @@
 # Tadam_bot
 Music recognition bot for Telegram Messenger. 
 
- Future Updates:
+Future Updates:
+
 1. Asyncio.
 2. New type of DB.
 3. German, Arabic and Russian languages will be added.
